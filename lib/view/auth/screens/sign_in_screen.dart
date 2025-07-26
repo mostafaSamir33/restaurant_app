@@ -37,7 +37,7 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               children: [
                 SizedBox(height: 28.h),
-                Image.asset(AppAssets.nullFoodImage,width: 250.w,),
+                Image.asset(AppAssets.nullFoodImage, width: 250.w),
                 SizedBox(height: 30.h),
                 Text(
                   'Restaurant App',
@@ -100,75 +100,74 @@ class _SignInScreenState extends State<SignInScreen> {
                 SizedBox(height: 34.h),
                 CustomElevatedButtonFilled(
                   buttonText: 'Login',
-                  onPressed: () {
+                  onPressed: () async {
                     if (formKey.currentState!.validate()) {
-                      context
-                          .read<UserAuthProvider>()
-                          .userLogin(
-                        email: emailController.text.trim(),
-                        password: passwordController.text,
-                        context: context,
-                      )
-                          .then((value) {
-                        if (value == null) {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            MenuScreen.routeName,
-                                (route) => false,
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${context
-                                    .read<UserAuthProvider>()
-                                    .userModel
-                                    ?.name ??
-                                    'User'} Logged In Successfully',
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              backgroundColor: AppColors.green,
-                              duration: Duration(seconds: 5),
-                              showCloseIcon: true,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                value,
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              backgroundColor: Colors.red,
-                              duration: Duration(seconds: 5),
-                              showCloseIcon: true,
-                            ),
-                          );
-                        }
-                      });
-                      if (context
-                          .watch<UserAuthProvider>()
-                          .loading) {
+                      final authProvider = Provider.of<UserAuthProvider>(
+                        context,
+                        listen: false,
+                      );
+                      if (authProvider.loading) {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
                           builder:
-                              (_) =>
-                              Center(
+                              (_) => Center(
                                 child: CircularProgressIndicator(
-                                  color: AppColors.green,
+                                  color: AppColors.orange,
                                 ),
                               ),
                         );
                       } else {
                         Navigator.pop(context);
                       }
+
+                      await authProvider
+                          .userLogin(
+                            email: emailController.text.trim(),
+                            password: passwordController.text,
+                            context: context,
+                          )
+                          .then((value) {
+                            if (!mounted) return;
+                            if (value == null) {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                MenuScreen.routeName,
+                                (route) => false,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${authProvider.userModel?.name ?? 'User'} Logged In Successfully',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  backgroundColor: AppColors.green,
+                                  duration: Duration(seconds: 5),
+                                  showCloseIcon: true,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    value,
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 5),
+                                  showCloseIcon: true,
+                                ),
+                              );
+                            }
+                          });
+
                       // Navigator.of(context).pushNamedAndRemoveUntil(
                       //   MenuScreen.routeName,
                       //       (route) => false,

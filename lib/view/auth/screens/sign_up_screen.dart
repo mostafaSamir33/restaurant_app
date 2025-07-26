@@ -142,10 +142,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             CustomElevatedButtonFilled(
               buttonText: 'Create Account',
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
-                  context
-                      .read<UserAuthProvider>()
+                  final authProvider = Provider.of<UserAuthProvider>(
+                    context,
+                    listen: false,
+                  );
+                  if (authProvider.loading) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder:
+                          (_) => Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.orange,
+                            ),
+                          ),
+                    );
+                  } else {
+                    Navigator.pop(context);
+                  }
+                  await authProvider
                       .userSignup(
                         email: emailController.text.trim(),
                         password: passwordController.text,
@@ -153,6 +170,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         context: context,
                       )
                       .then((value) {
+                        if (!mounted) return;
                         if (value == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -190,23 +208,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           );
                         }
                       });
-                  if (context.watch<UserAuthProvider>().loading) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder:
-                          (_) => Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.green,
-                            ),
-                          ),
-                    );
-                  } else {
-                    Navigator.pop(context);
-                  }
-                  // Navigator.of(
-                  //   context,
-                  // ).pushReplacementNamed(SignInScreen.routeName);
                 }
               },
             ),
