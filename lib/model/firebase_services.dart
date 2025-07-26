@@ -2,114 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:restaurant_app/model/user_model.dart';
 
-class FirebaseServices {
-  //firebase database
-//   static CollectionReference<EventDataModel> getEventsCollection() {
-//     CollectionReference<EventDataModel> eventsCollection = getUsersCollection()
-//         .doc(FirebaseAuth.instance.currentUser!.uid)
-//         .collection('Events')
-//         .withConverter<EventDataModel>(
-//           fromFirestore: (snapshot, options) =>
-//               EventDataModel.fromJson(snapshot.data() ?? {}),
-//           toFirestore: (value, options) => value.toJson(),
-//         );
-//     return eventsCollection;
-//   }
-//
-//   static Future<void> addNewEvent(EventDataModel eventDataModel) async {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     DocumentReference<EventDataModel> document = eventsCollection.doc();
-//     eventDataModel.id = document.id;
-//     await document.set(eventDataModel);
-//   }
-//
-//   static Future<List<EventDataModel>> getAllEvents(
-//       {CategoryValues? categoryValues}) async {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     QuerySnapshot<EventDataModel> querySnapshot = await eventsCollection
-//         .orderBy('dateTime')
-//         .where('categoryValues', isEqualTo: categoryValues?.toJson())
-//         .get();
-//     return querySnapshot.docs
-//         .map(
-//           (e) => e.data(),
-//         )
-//         .toList();
-//   }
-//
-//   //
-//
-//   static Stream<List<EventDataModel>> getAllEventsStream(
-//       {CategoryValues? categoryValues}) {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     Stream<QuerySnapshot<EventDataModel>> querySnapshot = eventsCollection
-//         .orderBy('dateTime')
-//         .where('categoryValues', isEqualTo: categoryValues?.toJson())
-//         .snapshots();
-//     var streamData = querySnapshot.map(
-//       (event) => event.docs
-//           .map(
-//             (e) => e.data(),
-//           )
-//           .toList(),
-//     );
-//     return streamData;
-//   }
-//
-//   static Stream<List<EventDataModel>> getFavEventsStream(
-//       {CategoryValues? categoryValues}) {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     Stream<QuerySnapshot<EventDataModel>> querySnapshot = eventsCollection
-//         .orderBy('dateTime')
-//         .where('isFavourite', isEqualTo: true)
-//         .snapshots();
-//     var streamData = querySnapshot.map(
-//       (event) => event.docs
-//           .map(
-//             (e) => e.data(),
-//           )
-//           .toList(),
-//     );
-//     return streamData;
-//   }
-//
-//   static Future<void> changeEventFav(
-//       EventDataModel eventDataModel, bool favValue) async {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     await eventsCollection
-//         .doc(eventDataModel.id)
-//         .update({'isFavourite': favValue});
-//   }
-//
-//   //delete event
-//   static Future<void> deleteEvent(EventDataModel eventDataModel) async {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     await eventsCollection.doc(eventDataModel.id).delete();
-//   }
-//
-// //update event
-//   static Future<void> editEvent(EventDataModel eventDataModel) async {
-//     CollectionReference<EventDataModel> eventsCollection =
-//         getEventsCollection();
-//     await eventsCollection
-//         .doc(eventDataModel.id)
-//         .update(eventDataModel.toJson());
-//   }
+import 'food_data_model.dart';
 
-//firebase authentication
+class FirebaseServices {
+  //firebase authentication
   static CollectionReference<UserModel> getUsersCollection() {
-    CollectionReference<UserModel> usersCollection =
-        FirebaseFirestore.instance.collection('Users').withConverter<UserModel>(
-              fromFirestore: (snapshot, options) =>
-                  UserModel.fromJson(snapshot.data() ?? {}),
-              toFirestore: (value, options) => value.toJson(),
-            );
+    CollectionReference<UserModel> usersCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .withConverter<UserModel>(
+          fromFirestore:
+              (snapshot, options) => UserModel.fromJson(snapshot.data() ?? {}),
+          toFirestore: (value, options) => value.toJson(),
+        );
     return usersCollection;
   }
 
@@ -125,20 +29,26 @@ class FirebaseServices {
     return document.data();
   }
 
-  static Future<UserModel> registerUser(
-      {required String email,
-        required String password,
-        required String name}) async {
+  static Future<UserModel> registerUser({
+    required String email,
+    required String password,
+    required String name,
+  }) async {
     UserCredential userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
-    UserModel userModel =
-    UserModel(email: email, name: name, uId: userCredential.user!.uid);
+    UserModel userModel = UserModel(
+      email: email,
+      name: name,
+      uId: userCredential.user!.uid,
+    );
     await addNewUser(userModel);
     return userModel;
   }
 
-  static Future<UserModel?> loginUser(
-      {required String email, required String password}) async {
+  static Future<UserModel?> loginUser({
+    required String email,
+    required String password,
+  }) async {
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
     if (userCredential.user?.uid != null) {
@@ -150,5 +60,75 @@ class FirebaseServices {
 
   static Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
+  }
+
+  //menu firebase firestore
+  static CollectionReference<FoodDataModel> getMenuCollection() {
+    CollectionReference<FoodDataModel> menuCollection = FirebaseFirestore
+        .instance
+        .collection('Menu')
+        .withConverter<FoodDataModel>(
+          fromFirestore:
+              (snapshot, options) =>
+                  FoodDataModel.fromJson(snapshot.data() ?? {}),
+          toFirestore: (value, options) => value.toJson(),
+        );
+    return menuCollection;
+  }
+
+  static Future<void> addFoodToMenu(FoodDataModel foodDataModel) async {
+    CollectionReference<FoodDataModel> menuCollection = getMenuCollection();
+    DocumentReference<FoodDataModel> document = menuCollection.doc(
+      foodDataModel.id,
+    );
+    await document.set(foodDataModel);
+  }
+
+  static Stream<List<FoodDataModel>> getAllMenuStream() {
+    CollectionReference<FoodDataModel> menuCollection = getMenuCollection();
+    Stream<QuerySnapshot<FoodDataModel>> querySnapshot =
+        menuCollection.snapshots();
+    var streamData = querySnapshot.map(
+      (food) => food.docs.map((e) => e.data()).toList(),
+    );
+    return streamData;
+  }
+
+  //cart firebase firestore
+  static CollectionReference<FoodDataModel> getCartCollection() {
+    CollectionReference<FoodDataModel> cartCollection = getUsersCollection()
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('User Cart')
+        .withConverter<FoodDataModel>(
+          fromFirestore:
+              (snapshot, options) =>
+                  FoodDataModel.fromJson(snapshot.data() ?? {}),
+          toFirestore: (value, options) => value.toJson(),
+        );
+    return cartCollection;
+  }
+
+  static Future<void> addFoodToCart(FoodDataModel foodDataModel) async {
+    CollectionReference<FoodDataModel> cartCollection = getCartCollection();
+    DocumentReference<FoodDataModel> document = cartCollection.doc(
+      foodDataModel.id,
+    );
+    foodDataModel.createdAt = DateTime.now();
+    await document.set(foodDataModel);
+  }
+
+  static Stream<List<FoodDataModel>> getAllCartStream() {
+    CollectionReference<FoodDataModel> cartCollection = getCartCollection();
+    Stream<QuerySnapshot<FoodDataModel>> querySnapshot =
+        cartCollection.orderBy('createdAt', descending: true).snapshots();
+    var streamData = querySnapshot.map(
+      (food) => food.docs.map((e) => e.data()).toList(),
+    );
+    return streamData;
+  }
+
+  static Future<void> deleteFood(FoodDataModel foodDataModel) async {
+    CollectionReference<FoodDataModel> cartCollection = getCartCollection();
+    await cartCollection.doc(foodDataModel.id).delete();
   }
 }

@@ -106,21 +106,16 @@ class _SignInScreenState extends State<SignInScreen> {
                         context,
                         listen: false,
                       );
-                      if (authProvider.loading) {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder:
-                              (_) => Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.orange,
-                                ),
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder:
+                            (_) => Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.orange,
                               ),
-                        );
-                      } else {
-                        Navigator.pop(context);
-                      }
-
+                            ),
+                      );
                       await authProvider
                           .userLogin(
                             email: emailController.text.trim(),
@@ -128,7 +123,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             context: context,
                           )
                           .then((value) {
-                            if (!mounted) return;
+                            Navigator.pop(context);
                             if (value == null) {
                               Navigator.of(context).pushNamedAndRemoveUntil(
                                 MenuScreen.routeName,
@@ -167,11 +162,6 @@ class _SignInScreenState extends State<SignInScreen> {
                               );
                             }
                           });
-
-                      // Navigator.of(context).pushNamedAndRemoveUntil(
-                      //   MenuScreen.routeName,
-                      //       (route) => false,
-                      // );
                     }
                   },
                 ),

@@ -148,20 +148,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     context,
                     listen: false,
                   );
-                  if (authProvider.loading) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder:
-                          (_) => Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.orange,
-                            ),
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder:
+                        (_) => Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.orange,
                           ),
-                    );
-                  } else {
-                    Navigator.pop(context);
-                  }
+                        ),
+                  );
                   await authProvider
                       .userSignup(
                         email: emailController.text.trim(),
@@ -170,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         context: context,
                       )
                       .then((value) {
-                        if (!mounted) return;
+                        Navigator.pop(context);
                         if (value == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

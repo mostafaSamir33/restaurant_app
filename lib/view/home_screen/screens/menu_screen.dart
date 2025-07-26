@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:restaurant_app/core/utils/app_assets.dart';
 import 'package:restaurant_app/core/utils/app_colors.dart';
+import 'package:restaurant_app/model/food_data_model.dart';
 import 'package:restaurant_app/view/auth/screens/sign_in_screen.dart';
 import 'package:restaurant_app/view/home_screen/screens/cart_screen.dart';
 
 import '../../../model/firebase_services.dart';
+import '../widgets/menu_card.dart';
 
-class MenuScreen extends StatelessWidget {
+class MenuScreen extends StatefulWidget {
   static const String routeName = '/MenuScreen';
 
   const MenuScreen({super.key});
+
+  @override
+  State<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends State<MenuScreen> {
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < FoodDataModel.menuFood.length; i++) {
+      FirebaseServices.addFoodToMenu(FoodDataModel.menuFood[i]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,68 +160,38 @@ class MenuScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.all(20.r),
-        itemBuilder: (context, index) {
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.darkBluePlus,
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(10.r),
-              child: Row(
-                spacing: 20.r,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset(AppAssets.nullFoodImage, width: 150.w),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Shrimp',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 30.sp,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text(
-                          '\$52.0',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.orange,
-                          ),
-                          child: Text(
-                            'Add To Cart',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+      body: StreamBuilder(
+        stream: FirebaseServices.getAllMenuStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.orange),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+                style: TextStyle(
+                  color: AppColors.red,
+                  fontSize: 26.sp,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            List<FoodDataModel> data = snapshot.data ?? [];
+            return ListView.separated(
+              padding: EdgeInsets.all(20.r).copyWith(bottom: 80.r),
+              itemBuilder: (context, index) {
+                return MenuCard(foodDataModel: data[index]);
+              },
+              separatorBuilder: (context, index) {
+                return SizedBox(height: 20.h);
+              },
+              itemCount: data.length,
+            );
+          }
         },
-        separatorBuilder: (context, index) {
-          return SizedBox(height: 20.h);
-        },
-        itemCount: 5,
       ),
     );
   }
