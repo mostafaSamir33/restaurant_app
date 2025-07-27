@@ -70,12 +70,6 @@ class UserAuthProvider extends ChangeNotifier {
     return null;
   }
 
-  // Future<void> getUser() async {
-  //   userModel = await FirebaseServices.getUserInfo(
-  //       FirebaseAuth.instance.currentUser!.uid);
-  //   notifyListeners();
-  // }
-
   String getMessageFromErrorCode(
     FirebaseAuthException e,
     BuildContext context,

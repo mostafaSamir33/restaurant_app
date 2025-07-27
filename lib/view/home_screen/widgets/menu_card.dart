@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:restaurant_app/model/firebase_services.dart';
 import 'package:restaurant_app/model/food_data_model.dart';
 
+import '../../../core/utils/app_assets.dart';
 import '../../../core/utils/app_colors.dart';
 
 class MenuCard extends StatelessWidget {
@@ -23,16 +24,35 @@ class MenuCard extends StatelessWidget {
           spacing: 20.r,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16.r),
-              child: Image.network(
-                foodDataModel.imagePath,
-                width: 150.w,
-                height: 150.h,
-                fit: BoxFit.cover,
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Image.network(
+                  foodDataModel.imagePath,
+                  width: 150.w,
+                  height: 150.h,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(color: AppColors.orange),
+                    );
+                  },
+                  errorBuilder:
+                      (context, error, stackTrace) => SizedBox(
+                        width: 150.w,
+                        height: 150.h,
+                        child: Image.asset(
+                          AppAssets.nullFoodImage,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                ),
               ),
             ),
             Expanded(
+              flex: 3,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,

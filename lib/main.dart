@@ -8,6 +8,7 @@ import 'package:restaurant_app/view/auth/screens/sign_in_screen.dart';
 import 'package:restaurant_app/view/auth/screens/sign_up_screen.dart';
 import 'package:restaurant_app/view/home_screen/screens/cart_screen.dart';
 import 'package:restaurant_app/view/home_screen/screens/menu_screen.dart';
+import 'package:restaurant_app/view_model/cart_provider.dart';
 import 'package:restaurant_app/view_model/user_auth_provider.dart';
 
 import 'firebase_options.dart';
@@ -42,8 +43,16 @@ class MyApp extends StatelessWidget {
           routes: {
             SignInScreen.routeName: (_) => SignInScreen(),
             SignUpScreen.routeName: (_) => SignUpScreen(),
-            MenuScreen.routeName: (_) => MenuScreen(),
-            CartScreen.routeName: (_) => CartScreen(),
+            MenuScreen.routeName:
+                (_) => ChangeNotifierProvider(
+                  create: (context) => CartProvider(),
+                  child: MenuScreen(),
+                ),
+            CartScreen.routeName:
+                (_) => ChangeNotifierProvider(
+                  create: (context) => CartProvider(),
+                  child: CartScreen(),
+                ),
           },
           initialRoute:
               FirebaseAuth.instance.currentUser != null
